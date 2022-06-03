@@ -1,0 +1,1 @@
+g++ index.cpp -o index -lraylib -lGL -lm -lpthread -ldl -lrt -lX11

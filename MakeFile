@@ -1,0 +1,2 @@
+default:
+g++ index.cpp -o index -lraylib
