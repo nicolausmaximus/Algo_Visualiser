@@ -28,7 +28,6 @@ bool ShouldShowStartOptions = false;
 std::vector<bool *> SortingChoice = {
     &SelectionSortPressed,
 };
-
 bool addSpeed = false;
 bool subSpeed = false;
 bool addSize = false;
@@ -36,7 +35,10 @@ bool subSize = false;
 bool NormalSize = false;
 bool NormalSpeed = false;
 
-
+// Game States:
+bool GameShouldStart = false;
+bool ShouldShowEndingScreen = false;
+void Start_Button(float size, float font, char Start[]);
 
 void ShowMenuScreen();
 void ShowStartOptions();
@@ -44,6 +46,9 @@ void ChangeSize(char operation, int &value);
 void ChangeSpeed(char operation, int &value);
 void Button(float x, float y, char *Text, Color color, bool &state);
 void Selection_Sort_Button(float size, char Selection_Sort_Text[]);
+void SortArray();
+
+void Selection_Sort(std::vector<std::pair<int, int>> &arr);
 std::vector<std::pair<int, int>> arr(NumberOfPillers);
 
 Color FindColorForPiller(int pillerState);
@@ -81,7 +86,15 @@ int main()
             ShowStartOptions();
         }
         
-        
+        if (GameShouldStart){
+            ShouldShowMenuScreen = false;
+            ShouldShowStartOptions = false;
+
+            SortArray();
+
+            GameShouldStart = false;
+            ShouldShowEndingScreen = true;
+        }
 
         EndDrawing();
     }
@@ -192,6 +205,15 @@ void Button(float x, float y, char *Text, Color color, bool &state){
                 state = false;
             else 
                 state = true;
+
+                if (state != ShouldRandomizeArray && state != GameShouldStart
+            && (state != addSize && state != subSize && state != addSpeed
+            && state != subSpeed && state != NormalSize && state != NormalSpeed))
+
+                for (bool *i : SortingChoice)
+                    if (i != &state)
+                        *i = false;
+
             return;
         }   
         
@@ -208,6 +230,7 @@ void ShowStartOptions(){
 
     char StartText[] = "Start Game!";
     float tmp = (27*GetScreenWidth()) / 100; 
+    Start_Button(tmp, font, StartText);
 
     tmp += MeasureText(StartText, font) + 75;
     char RandomizeArrayText[] = "Randomize Array!";
@@ -354,3 +377,88 @@ void ChangeSpeed(char operation, int &value){
 }
 
 
+
+void ShowEndingScreen(){
+    DrawArray(arr);
+
+    ShouldShowMenuScreen = true;
+    ShouldShowEndingScreen = false;
+}
+
+
+void Start_Button(float size, float font, char Start[]){
+    Button(size, GetScreenHeight()/20 + font*2,
+        Start, BLUE, GameShouldStart);
+
+    return;
+}
+
+void SortArray(){
+    for (bool *state : SortingChoice){
+        if (*state == true){
+
+
+            if (state == &SelectionSortPressed)
+                Selection_Sort(arr);
+
+
+                                 
+        }
+
+        *state = false;
+    }
+    
+    return;
+}
+
+
+
+// Selection Sort:
+void Selection_Sort(std::vector<std::pair<int, int>> &arr){
+
+    for (int i = 0; i < NumberOfPillers; i++){
+        arr[i].second = SELECTED;
+
+        std::pair<int, int> minNum = {arr[i].first, i};
+        for (int j = i; j < NumberOfPillers; j++){
+            arr[j].second = COMPARING;
+            arr[minNum.second].second = MINIMUM;
+
+
+            if (minNum.first > arr[j].first){
+
+                if (minNum.second == i)
+                    arr[minNum.second].second = SELECTED;
+                else if (minNum.second == j)
+                    arr[minNum.second].second = COMPARING;
+                else 
+                    arr[minNum.second].second = NORMAL;
+
+
+                minNum = {arr[j].first, j};
+
+            }
+
+
+            BeginDrawing();
+            ClearBackground(BROWN);
+
+            DrawArray(arr);
+
+
+            if (j == i)
+                arr[j].second = SELECTED;
+            else 
+                arr[j].second = NORMAL;
+
+            EndDrawing();
+        }
+
+        std::swap(arr[i], arr[minNum.second]);
+        arr[i].second = SORTED;
+
+        for (int j = i+1; j < NumberOfPillers; j++){
+            arr[j].second = NORMAL;
+        }
+    }
+}
